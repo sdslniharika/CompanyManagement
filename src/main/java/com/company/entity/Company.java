@@ -1,5 +1,6 @@
 package com.company.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +24,7 @@ public class Company {
     private String name;
     private String location;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
     private List<Department> departments;
 
@@ -40,5 +42,21 @@ public class Company {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public List<Department> getDepartments() {
+        return departments;
+    }
+
+    public void setDepartments(List<Department> departments) {
+        this.departments = departments;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }
