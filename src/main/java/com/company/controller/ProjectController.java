@@ -9,11 +9,18 @@ import com.company.payload.APIResponse;
 import com.company.service.DepartmentService;
 import com.company.service.ProjectService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/projects")
@@ -51,6 +58,39 @@ public class ProjectController {
         APIResponse<List<ProjectDTO>> apiResponse=new APIResponse<>
                 (HttpStatus.OK.value(), "Projects Fetched Successfully",projectDTOList);
         return  ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<APIResponse<Map<String , Object>>> getAllProjectsPaginated(
+            @RequestParam(defaultValue = "0")int pageNo,
+            @RequestParam(defaultValue = "5")int pageSize,
+            @RequestParam(defaultValue = "id")String sortBy,
+            @RequestParam(defaultValue = "asc")String sortOrder
+    )
+    {
+        Sort.Direction sort=sortOrder.equalsIgnoreCase("desc")?
+        Sort.Direction.DESC:Sort.Direction.ASC;
+
+        Pageable pageable= PageRequest.of(pageNo,pageSize,Sort.by(sort,sortBy));
+
+        Page<Project> projectPage=projectService.getAllProjectsPaginated(pageable);
+
+        List<ProjectDTO> projectDTOList=projectPage.getContent().
+                stream().map(ProjectMapper::toProjectDTO).toList();
+
+        Map<String,Object> projectDTOMap=new HashMap<>();
+
+        projectDTOMap.put("content",projectDTOList);
+        projectDTOMap.put("pageSize",projectPage.getSize());
+        projectDTOMap.put("currentPage",projectPage.getNumber());
+        projectDTOMap.put("totalItems",projectPage.getTotalElements());
+        projectDTOMap.put("totalPages",projectPage.getTotalPages());
+        projectDTOMap.put("last",projectPage.isLast());
+
+        APIResponse<Map<String,Object>> apiResponse=new APIResponse<>(HttpStatus.OK.value(),
+                "Projets Paginated",projectDTOMap);
+        return  ResponseEntity.ok(apiResponse);
+
     }
 
     @GetMapping("/{id}")

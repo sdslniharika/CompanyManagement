@@ -3,6 +3,8 @@ package com.company.service;
 import com.company.entity.Company;
 import com.company.exception.ResourceNotFound;
 import com.company.repository.CompanyRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +24,10 @@ public class CompanyService {
 
     public List<Company> getAllCompanies() {
         return companyRepository.findAll();
+    }
+
+    public Page<Company> getAppCompaniesPaginated(Pageable pageable) {
+        return companyRepository.findAll(pageable);
     }
 
     public Company getCompanyById(Long id){

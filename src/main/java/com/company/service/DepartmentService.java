@@ -5,6 +5,8 @@ import com.company.entity.Department;
 import com.company.exception.ResourceNotFound;
 import com.company.repository.CompanyRepository;
 import com.company.repository.DepartmentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,6 +36,10 @@ public class DepartmentService {
     public List<Department> getAllDepartment()
     {
         return departmentRepository.findAll();
+    }
+    public Page<Department> getAllDepartmentPaginated(Pageable pageable)
+    {
+        return departmentRepository.findAll(pageable);
     }
 
     public Department getDepartmentById(Long id)

@@ -1,22 +1,25 @@
 package com.company.controller;
 
 import com.company.entity.Company;
+import com.company.entity.Department;
 import com.company.mapper.CompanyMapper;
+import com.company.mapper.DepartmentMapper;
 import com.company.model.CompanyDTO;
+import com.company.model.DepartmentDTO;
 import com.company.payload.APIResponse;
 import com.company.service.CompanyService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/companies")
@@ -48,6 +51,39 @@ public class CompanyController {
         APIResponse<List<CompanyDTO>> apiResponse = new APIResponse<>(HttpStatus.OK.value(),
                 "Fetched Successfully", companyDTOS);
         return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<APIResponse<Map<String , Object>>> getAllCompanyPaginated(
+            @RequestParam(defaultValue = "0")int pageNo,
+            @RequestParam(defaultValue = "5")int pageSize,
+            @RequestParam(defaultValue = "id")String sortBy,
+            @RequestParam(defaultValue = "asc")String sortOrder
+    )
+    {
+        Sort.Direction sort=sortOrder.equalsIgnoreCase("desc")?
+                Sort.Direction.DESC:Sort.Direction.ASC;
+
+        Pageable pageable= PageRequest.of(pageNo,pageSize,Sort.by(sort,sortBy));
+
+        Page<Company> companyPage=companyService.getAppCompaniesPaginated(pageable);
+
+        List<CompanyDTO> companyDTOList=companyPage.getContent().
+                stream().map(CompanyMapper::toCompanyDTO).toList();
+
+        Map<String,Object> companyDTOMap=new HashMap<>();
+
+        companyDTOMap.put("content",companyDTOList);
+        companyDTOMap.put("pageSize",companyPage.getSize());
+        companyDTOMap.put("currentPage",companyPage.getNumber());
+        companyDTOMap.put("totalItems",companyPage.getTotalElements());
+        companyDTOMap.put("totalPages",companyPage.getTotalPages());
+        companyDTOMap.put("last",companyPage.isLast());
+
+        APIResponse<Map<String,Object>> apiResponse=new APIResponse<>(HttpStatus.OK.value(),
+                "Department Paginated",companyDTOMap);
+        return  ResponseEntity.ok(apiResponse);
+
     }
 
     @GetMapping("/{id}")

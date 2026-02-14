@@ -7,6 +7,8 @@ import com.company.entity.Project;
 import com.company.exception.ResourceNotFound;
 import com.company.repository.ProjectRepository;
 import com.company.repository.EmployeeRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,6 +43,10 @@ public class EmployeeService {
         return employeeRepository.findAll();
     }
 
+    public Page<Employee> getAllEmployeePaginated(Pageable page)
+    {
+        return employeeRepository.findAll(page);
+    }
     public Employee getEmployeeById(Long id)
     {
 

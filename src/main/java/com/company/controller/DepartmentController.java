@@ -3,17 +3,26 @@ package com.company.controller;
 
 import com.company.entity.Company;
 import com.company.entity.Department;
+import com.company.entity.Project;
 import com.company.mapper.DepartmentMapper;
+import com.company.mapper.ProjectMapper;
 import com.company.model.DepartmentDTO;
+import com.company.model.ProjectDTO;
 import com.company.payload.APIResponse;
 import com.company.service.CompanyService;
 import com.company.service.DepartmentService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/departments")
@@ -51,6 +60,39 @@ public class DepartmentController {
                 (HttpStatus.CREATED.value(), "Department Fetched Successfully",
                         departmentList);
         return ResponseEntity.ok(apiResponse);
+
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<APIResponse<Map<String , Object>>> getAllDepartmentsPaginated(
+            @RequestParam(defaultValue = "0")int pageNo,
+            @RequestParam(defaultValue = "5")int pageSize,
+            @RequestParam(defaultValue = "id")String sortBy,
+            @RequestParam(defaultValue = "asc")String sortOrder
+    )
+    {
+        Sort.Direction sort=sortOrder.equalsIgnoreCase("desc")?
+                Sort.Direction.DESC:Sort.Direction.ASC;
+
+        Pageable pageable= PageRequest.of(pageNo,pageSize,Sort.by(sort,sortBy));
+
+        Page<Department> departmentPage=departmentService.getAllDepartmentPaginated(pageable);
+
+        List<DepartmentDTO> departmentDTOList=departmentPage.getContent().
+                stream().map(DepartmentMapper::toDepartmentDTO).toList();
+
+        Map<String,Object> departmentDTOMap=new HashMap<>();
+
+        departmentDTOMap.put("content",departmentDTOList);
+        departmentDTOMap.put("pageSize",departmentPage.getSize());
+        departmentDTOMap.put("currentPage",departmentPage.getNumber());
+        departmentDTOMap.put("totalItems",departmentPage.getTotalElements());
+        departmentDTOMap.put("totalPages",departmentPage.getTotalPages());
+        departmentDTOMap.put("last",departmentPage.isLast());
+
+        APIResponse<Map<String,Object>> apiResponse=new APIResponse<>(HttpStatus.OK.value(),
+                "Department Paginated",departmentDTOMap);
+        return  ResponseEntity.ok(apiResponse);
 
     }
 

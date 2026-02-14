@@ -14,7 +14,6 @@ public class CompanyMapper {
 
         return  company;
     }
-
     public static  CompanyDTO toCompanyDTO(Company company)
     {
         CompanyDTO companyDTO=new CompanyDTO();
